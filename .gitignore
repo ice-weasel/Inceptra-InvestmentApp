@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+iedc-mbcet-firebase-adminsdk-9j5f4-018406d623.json
 
 # vercel
 .vercel
