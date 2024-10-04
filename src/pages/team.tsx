@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import "tailwindcss/tailwind.css";
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +9,7 @@ import adminApp, { getAdminAuth } from "@/lib/firebaseAdmin";
 import { getAuth } from "firebase-admin/auth";
 import { GetServerSideProps } from 'next';
 import { adminDb } from '@/lib/firebaseAdmin';
+
 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

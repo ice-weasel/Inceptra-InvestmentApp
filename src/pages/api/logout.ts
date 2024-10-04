@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         // Set the session cookie with an expiration in the past

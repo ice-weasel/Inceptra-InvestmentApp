@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Layout from '../components/Layout';
 import { useTeamData } from '../hooks/useTeamData';
 
+
 export default function HomePage() {
   const { teams, loading, error } = useTeamData();
 

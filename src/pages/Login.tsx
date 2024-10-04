@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { motion } from "framer-motion";
 import { useState,useEffect } from "react";
@@ -7,6 +8,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../lib/firebase'
 import '../lib/firebase'
 import { useRouter } from "next/navigation";
+
+
 
 
 export default function Login() {

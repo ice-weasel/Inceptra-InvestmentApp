@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import "tailwindcss/tailwind.css";
 import { useTeamData } from '../hooks/useTeamData';
 
+
 export default function Leaderboard() {
   const { teams, loading, error } = useTeamData();
 
