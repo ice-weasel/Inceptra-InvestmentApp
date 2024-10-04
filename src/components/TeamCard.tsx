@@ -14,7 +14,7 @@ export default function TeamCard({ team }:any) {
       <p className="mb-1">Investments: ${totalInvestments.toLocaleString()}</p>
       <p className="mb-3 font-bold">Total Value: ${totalValue.toLocaleString()}</p>
       <Link 
-        href={`/team/${team.id}`}
+        href={'/team'}
         className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
       >
         View Details
