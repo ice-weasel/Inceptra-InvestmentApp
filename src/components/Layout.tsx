@@ -29,7 +29,7 @@ export default function Layout({ children }:any) {
         {children}
       </main>
       <footer className="bg-gray-200 p-4 text-center">
-        <p>&copy; 2024 Investment Competition. All rights reserved.</p>
+        <p>&copy; 2024 IEDC Catalyst. All rights reserved.</p>
       </footer>
     </div>
   );
