@@ -9,6 +9,7 @@ interface Team {
   name: string;
   balance: number;
   investments: { [key: string]: number };
+  returns : { [key: string]: number }
 }
 
 interface UseTeamData {
@@ -67,32 +68,49 @@ export function useTeamData(): UseTeamData {
   const getTeam = (id: string): Team | undefined => teams.find((team) => team.id === id);
 
 
-  const makeInvestment = async (fromTeamId: string, toTeamId: string, amount: number): Promise<void> => {
+  const makeInvestment = async (
+    fromTeamId: string, 
+    toTeamId: string, 
+    amount: number, 
+    profitPercentage: number = 0.1, // Set default values for demonstration
+    time: number = 1
+  ): Promise<void> => {
     if (fromTeamId === toTeamId) {
       throw new Error('Cannot invest in your own team');
     }
-
+  
     const fromTeam = getTeam(fromTeamId);
     const toTeam = getTeam(toTeamId);
-
-    const toTeamName = toTeam?.name || 'Default Team Name'; 
-
-
-
+  
+    const toTeamName = toTeam?.name || 'Default Team Name';
+  
     if (!fromTeam || !toTeam) {
       throw new Error('Invalid team ID');
     }
-
+  
     if (fromTeam.balance < amount) {
       throw new Error('Insufficient funds');
     }
-
+  
     const fromTeamRef = ref(db, `teams/${fromTeamId}`);
     const toTeamRef = ref(db, `teams/${toTeamId}`);
     const transactionRef = ref(db, 'transactions');
-
+  
+    // Returns Calculation
+    const calculateReturns = (
+      fromTeam: Team,
+      toTeam: Team,
+      investmentAmount: number,
+      profitPercentage: number,
+      time: number
+    ) => {
+      const investmentsOut = Object.values(fromTeam.investments).reduce((acc, val) => acc + val, 0);
+      const profitOnInvestment = investmentAmount * Math.pow(1 + profitPercentage, time);
+      const returnsIn = Object.values(toTeam.investments).reduce((acc, val) => acc + val, 0);
+      return profitOnInvestment + returnsIn - investmentsOut;
+    };
+  
     try {
-      // Update fromTeam's balance and investments
       await set(fromTeamRef, {
         ...fromTeam,
         balance: fromTeam.balance - amount,
@@ -100,27 +118,45 @@ export function useTeamData(): UseTeamData {
           ...fromTeam.investments,
           [toTeamName]: (fromTeam.investments[toTeamName] || 0) + amount,
         },
-        
       });
-
-      // Update toTeam's balance
+  
       await set(toTeamRef, {
         ...toTeam,
         balance: toTeam.balance + amount,
       });
-
-      // Record the transaction
+  
       await push(transactionRef, {
         from: fromTeamId,
         to: toTeamId,
         amount,
         timestamp: serverTimestamp(),
       });
+  
+      // Calculate the returns after the investment
+      const returns = calculateReturns(fromTeam, toTeam, amount, profitPercentage, time);
+      await set(fromTeamRef, {
+        ...fromTeam,
+        balance: fromTeam.balance - amount,
+        investments: {
+          ...fromTeam.investments,
+          [toTeamName]: (fromTeam.investments[toTeamName] || 0) + amount,
+        },
+        returns: {
+          ...fromTeam.returns, // Spread existing returns if any
+          [toTeamId]: (fromTeam.returns?.[toTeamId] || 0) + returns, // Create or update the specific returns for this investment
+        },
+      });
+      
+
+      console.log(`Calculated returns for ${fromTeamId} after investing in ${toTeamId}: ${returns}`);
+      
+      // Optionally, you can store `returns` back into your database if needed.
+      
     } catch (err) {
       setError(err as Error);
       throw err;
     }
   };
-
+  
   return { teams, loading, error, getTeam, makeInvestment };
 }

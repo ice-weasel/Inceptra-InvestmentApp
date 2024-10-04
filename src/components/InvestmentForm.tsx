@@ -1,7 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { useTeamData } from '../hooks/useTeamData';
 import "tailwindcss/tailwind.css";
+
+import { adminDb,getAdminDB } from '@/lib/firebaseAdmin';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { off, onValue, ref } from 'firebase/database';
+
+
+
 import { Syne, DM_Sans } from 'next/font/google';
 import { bebas } from '@/pages/team';
 
@@ -17,9 +26,12 @@ export const dm = DM_Sans({
   subsets: ['latin'],
 });
 
+
 export async function getServerSideProps(context: any) {
   const { req } = context;
   const sessionCookie = req.cookies["session"];
+
+
 
   if (!sessionCookie) {
     return {
@@ -38,6 +50,23 @@ export default function InvestmentForm({ teamId, currentBalance }: { teamId: str
   const [amount, setAmount] = useState('');
   const [amountError, setAmountError] = useState('');
   const { teams, makeInvestment, loading, error } = useTeamData();
+  
+  const router = useRouter()
+
+  useEffect(() => {
+    const investmentRef = ref(db, 'Investing'); // Reference to the investment status
+
+    const unsubscribe = onValue(investmentRef, (snapshot) => {
+      const investmentStatus = snapshot.val();
+      if (investmentStatus === false) {
+        router.push('/homePage'); // Redirect to homepage if investing is false
+      }
+    });
+
+    // Cleanup on unmount
+    return () => off(investmentRef); // Remove listener
+  }, [router]);
+
 
   const validateAmount = (value: string) => {
     const numValue = Number(value);
