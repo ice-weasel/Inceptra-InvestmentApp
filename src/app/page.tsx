@@ -1,12 +1,10 @@
 
-import Login from "@/pages/Login";
-
-
+import HomePage from "@/pages/homePage";
 
 export default function Home() {
   return (
     <>
-    <Login/>
+    <HomePage/>
     </>
   )
   

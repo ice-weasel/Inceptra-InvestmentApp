@@ -17,7 +17,7 @@ export default function Layout({ children }:any) {
               </Link>
             </li>
             <li>
-              <Link href="/leaderboard" className="hover:underline">
+              <Link href="/leaderBoard" className="hover:underline">
                 Leaderboard
               </Link>
             </li>
