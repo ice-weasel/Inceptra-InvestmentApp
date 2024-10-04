@@ -1,134 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import "tailwindcss/tailwind.css";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Layout from '../components/Layout';
-import InvestmentForm, { dm, syne } from '../components/InvestmentForm';
-import { useTeamData } from '../hooks/useTeamData';
-import adminApp, { getAdminAuth } from "@/lib/firebaseAdmin";
-import { getAuth } from "firebase-admin/auth";
-import { GetServerSideProps } from 'next';
-import { adminDb } from '@/lib/firebaseAdmin';
-import { Rock_Salt, Bebas_Neue,Familjen_Grotesk } from 'next/font/google'
-import { spice } from "@/lib/fonts";
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import Image from "next/image";
-import goldCoin from '../../public/goldcoin.svg'
-import TeamDet from "@/components/Teamdet";
-export const rock = Rock_Salt({
-  weight: ["400"],
-  style: ['normal'],
-  subsets: ['latin'],
-});
+import { bebas } from '@/pages/team'
+import React, { useMemo } from 'react'
+import { syne } from './InvestmentForm'
+import Link from 'next/link';
 
-export const bebas = Bebas_Neue({
-  weight: ["400"],
-  style: ['normal'],
-  subsets: ['latin'],
-});
-export const familjen = Familjen_Grotesk({
-  weight: ["400","500","600","700"],
-  style: ['normal'],
-  subsets: ['latin'],
-});
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { req } = context;
-  const sessionCookie = req.cookies["session"];
+// Array of background colors to choose from
+const backgroundColors = [
 
-  if (!sessionCookie) {
-    return {
-      redirect: {
-        destination: "/Login",
-        permanent: false,
-      },
-    };
-  }
+  'bg-[#C1EA88]',
+  'bg-[#FFB6C1]',
+  'bg-[#87CEFA]',
+  'bg-[#98FB98]',
+  'bg-[#DDA0DD]',
+  'bg-[#F0E68C]',
+  'bg-[#E6E6FA]'
+];
 
-  try {
-    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
-    const uid = decodedClaims.uid;
-
-    const userRef = adminDb.ref(`users/${uid}`);
-    const userSnapshot = await userRef.once('value');
-    const userData = userSnapshot.val();
-
-    if (!userData || !userData.teamId) {
-      throw new Error('User has no associated team');
-    }
-
-    const teamId = userData.teamId;
-
-    const teamRef = adminDb.ref(`teams/${teamId}`);
-    const teamSnapshot = await teamRef.once('value');
-    const teamData = teamSnapshot.val();
-
-    if (!teamData) {
-      throw new Error('Team not found');
-    }
-
-    return { 
-      props: { 
-        teamId,
-        teamName: teamData.name,
-        teamBalance: teamData.balance,
-      } 
-    };
-  } catch (error) {
-    console.error('Error verifying session:', error);
-    return {
-      redirect: {
-        destination: "/Login",
-        permanent: false,
-      },
-    };
-  }
-}
-
-interface TeamPageProps {
-  teamId: string;
-  teamName: string;
-  teamBalance: number;
-}
-
-export default function TeamPage({ teamId, teamName, teamBalance }: TeamPageProps) {
-  const { getTeam, loading, error } = useTeamData();
-  const router = useRouter();
-  const [isInvestmentsOpen, setIsInvestmentsOpen] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/logout', { method: 'POST' });
-      if (response.ok) {
-        router.push('/Login');
-      } else {
-        console.error('Logout failed');
-      }
-    } catch (error) {
-      console.error('An error occurred during logout', error);
-    }
-  };
-
-  const team = getTeam(teamId);
-
-  if (loading) return <Layout><p>Loading...</p></Layout>;
-  if (error) return <Layout><p>Error: {error.message}</p></Layout>;
-  if (!team) return <Layout><p>Team not found</p></Layout>;
+const TeamDet2 = ({teamName, balance,href}: {teamName: string, balance: string,href:string}) => {
+  // Randomly select a background color
+  const randomBgColor = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * backgroundColors.length);
+    return backgroundColors[randomIndex];
+  }, [teamName]); // Re-compute only if teamName changes
 
   return (
-    <Layout>
-      <div className="px-6 md:px-24 py-4 bg-[#F0F0F0] h-screen flex flex-col gap-2 ">
-        <div className=" flex flex-col items-start gap-3 border-2 border-black shadow-custom-2 py-3 px-4 mb-3 rounded-xl">
-        <div className="flex flex-col items-start  ">
-          <h1 className={`${familjen.className} text-xl font-bold  `}>Team</h1>
-        <h1 className={`${familjen.className} text-3xl font-bold mb-3 `}>{team.name}</h1>
-
-        </div>
-        {/* <h2 className="text-2xl font-semibold mb-2">Balance</h2> */}
-        <div className={`${syne.className} mb-3 flex bg-[#17358D]  justify-center items-center h-36 shadow-custom-2 text-white rounded-xl w-full gap-3  py-2 `}>
-       <div className="flex items-center gap-4">
-       <div className="scale-[2]">
+    <Link href={href} className={`flex px-3 py-3 items-center gap-3 justify-between rounded-md ${randomBgColor} border-black border-2 shadow-custom-3`}>
+      <div className={`${syne.className} font-bold`}>{teamName}</div>
+    <div className='flex items-center gap-1'>
+    <div className="scale-[1]">
               <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M25.0831 13.0005C25.0831 19.6746 19.6727 25.085 12.9986 25.085C12.1929 25.085 11.4058 25.0062 10.6442 24.8557C9.95243 24.7193 9.28184 24.5236 8.63793 24.2742C8.15044 24.0856 7.67819 23.8662 7.22364 23.6184C5.45171 22.6527 3.94817 21.2561 2.85384 19.5697C2.57415 19.1386 2.32103 18.6885 2.09718 18.2217C1.61045 17.2074 1.26103 16.1144 1.07336 14.9672C0.968541 14.3271 0.914062 13.6702 0.914062 13.0005C0.914062 6.32643 6.32447 0.916016 12.9986 0.916016C13.6683 0.916016 14.3251 0.970494 14.9652 1.07531C16.1125 1.26298 17.2054 1.6124 18.2198 2.09913C18.6865 2.32296 19.1366 2.5761 19.5677 2.85579C21.2542 3.95011 22.6508 5.45365 23.6165 7.2256C23.8643 7.68013 24.0837 8.15239 24.2723 8.63989C24.5216 9.28378 24.7174 9.95438 24.8538 10.6462C25.0042 11.4077 25.0831 12.1949 25.0831 13.0005Z" fill="#FFB93E"/>
     <path d="M12.9984 21.1632C17.5067 21.1632 21.1615 17.5084 21.1615 13.0001C21.1615 8.49168 17.5067 4.83691 12.9984 4.83691C8.48997 4.83691 4.83521 8.49168 4.83521 13.0001C4.83521 17.5084 8.48997 21.1632 12.9984 21.1632Z" fill="#FFD85C"/>
@@ -141,51 +39,10 @@ export default function TeamPage({ teamId, teamName, teamBalance }: TeamPageProp
     </svg>
 
           </div>
-          <p className={`text-6xl ${bebas.className} ` }>${team.balance.toLocaleString()}</p>
-       </div>
-        </div>
-        </div>
-
-        <div className="gap-2 items-start bg-[#FEF5CC] border-black border-2 shadow-custom-2 text-black flex flex-col px-4 py-6 rounded-xl mb-3">
-          <div 
-            className="w-full flex justify-between items-center cursor-pointer" 
-            onClick={() => setIsInvestmentsOpen(!isInvestmentsOpen)}
-          >
-            <h2 className={`${bebas.className} tracking-wide text-3xl font-semibold`}>Current Investments</h2>
-            {isInvestmentsOpen ? <FiChevronUp size={24} /> : <FiChevronDown size={24} />}
-          </div>
-          <AnimatePresence>
-            {isInvestmentsOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="w-full overflow-hidden"
-              >
-                {Object.entries(team.investments).length > 0 ? (
-                  <ul className="mt-2 pb-2 flex gap-3 flex-col">
-                    {Object.entries(team.investments).map(([teamId, amount]: any) => (
-                      // <li key={teamId} className="mb-2">
-                      //   {teamId}: ${amount.toLocaleString()}
-                      // </li>
-                      <TeamDet key={teamId} teamName={teamId} balance={amount}/>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className={`${syne.className} font-bold mt-2`}>No current investments</p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <InvestmentForm teamId={teamId}  currentBalance={team.balance}/>
-
-        <button onClick={handleLogout} type="button" className={`${syne.className} text-lg w-fit shadow-custom border-2 border-black  bg-[#C1EA88] font-bold rounded-full flex justify-center items-center px-5 py-2 mt-8`}>
-          Logout
-        </button>
-      </div>
-    </Layout>
-  );
+    <div className={`${bebas.className} text-2xl`}>${balance.toLocaleString()}</div>
+    </div>
+    </Link>
+  )
 }
+
+export default TeamDet2
