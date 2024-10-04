@@ -2,3 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
+.button-shadow{
+    box-shadow: 2px 4px 0px 0px #000;
+}

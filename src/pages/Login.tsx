@@ -8,6 +8,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../lib/firebase'
 import '../lib/firebase'
 import { useRouter } from "next/navigation";
+import { dm, syne } from "@/components/InvestmentForm";
 
 
 
@@ -61,80 +62,42 @@ const handleClick = async () => {
 };
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-gray-900">
+    <div className="w-screen h-screen flex justify-center items-center bg-[#1C45E5] px-6">
       {/* Animated container */}
-      <motion.div
-        className="w-[300px] sm:w-[500px]  md:w-[650px] md:h-[450px]  p-8 gap-6 bg-white rounded-lg shadow-lg flex flex-col justify-center items-center"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="w-full h-full mt-7 ">
-          <motion.h1
-            className="text-3xl md:text-5xl pt-8 flex items-start w-full font-semi-bold text-black mb-8"
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            Login
-          </motion.h1>
-
-          <motion.div
-            className="w-full flex flex-col space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: "easeIn" }}
-          >
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              required
-              autoComplete="true"
-              onChange={(e) => setEmail(e.target.value)}
-              className="p-2 border-b border-gray-400  transition-all duration-300 focus:outline-rounded focus:outline-blue-600"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              required
-              autoComplete="autocomplete"
-              onChange={(e)=> setPassword(e.target.value)}
-              className="p-2 border-b border-gray-400 transition-all duration-300 focus:outline-rounded focus:outline-blue-600 focus:border-black"
-            />
-          </motion.div>
-          {/* Login Button with loading effect */}
-          <motion.button
-            className={`mt-6 px-4 py-2 w-full relative rounded-lg focus:outline-none ${
-              isLoading
-                ? "bg-gray-400"
-                : "bg-blue-500 hover:bg-gray-400 text-white"
-            }`}
-            onClick={handleClick}
-            disabled={isLoading} // Disable button during loading
-          >
-            {isLoading ? (
-              <motion.div
-                className="absolute top-0 left-0 h-full rounded-lg bg-blue-700"
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 3 }}
-              ></motion.div>
-            ) : (
-              "Login"
-            )}
-
-            {/* Keep text centered */}
-            <span className="relative z-10">
-              {isLoading ? "Loading..." : ""}
-            </span>
-          </motion.button>
+     
+      <div className={`w-screen md:w-1/3  rounded-xl bg-white border-2 flex-col gap-5 items-start border-black shadow-custom-2 flex px-5 py-6 ${syne.className}`}>
+        <div className="text-4xl font-bold">Team Login</div>
+        <div className="w-full flex flex-col items-start gap-4">
+          <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                required
+                autoComplete="true"
+                onChange={(e) => setEmail(e.target.value)}
+                className="p-3 shadow-custom-3 bg-white border-2 border-black rounded-full outline-none w-full px-4  "
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                required
+                autoComplete="autocomplete"
+                onChange={(e)=> setPassword(e.target.value)}
+                  className="p-3 shadow-custom-3 bg-white border-2 border-black rounded-full outline-none w-full px-4  "
+              />
         </div>
-        {/* Login text */}
-
-        {/* Input fields */}
-      </motion.div>
+        <button
+          onClick={handleClick}
+          disabled={isLoading}
+        type="submit"
+        className={`${syne.className} text-lg min-w-36 shadow-custom border-2 text-white border-black  bg-[#1C45E5] font-bold rounded-full flex justify-center items-center px-5 py-2 `}
+       
+      >
+        {!isLoading ? 'Login' : 'Logging In...'}
+      </button>
+      </div>
+     
     </div>
   );
 }
