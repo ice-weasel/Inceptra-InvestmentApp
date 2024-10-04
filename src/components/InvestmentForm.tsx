@@ -1,11 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { useTeamData } from '../hooks/useTeamData';
 import "tailwindcss/tailwind.css";
+import { adminDb,getAdminDB } from '@/lib/firebaseAdmin';
+import { useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { off, onValue, ref } from 'firebase/database';
+
+
 
 export async function getServerSideProps(context: any) {
   const { req } = context;
   const sessionCookie = req.cookies["session"];
+
+
 
   if (!sessionCookie) {
     // Redirect to login if no session cookie
@@ -26,6 +35,23 @@ export default function InvestmentForm({ teamId }:any) {
   const [targetTeam, setTargetTeam] = useState('');
   const [amount, setAmount] = useState('');
   const { teams, makeInvestment, loading, error } = useTeamData();
+  
+  const router = useRouter()
+
+  useEffect(() => {
+    const investmentRef = ref(db, 'Investing'); // Reference to the investment status
+
+    const unsubscribe = onValue(investmentRef, (snapshot) => {
+      const investmentStatus = snapshot.val();
+      if (investmentStatus === false) {
+        router.push('/homePage'); // Redirect to homepage if investing is false
+      }
+    });
+
+    // Cleanup on unmount
+    return () => off(investmentRef); // Remove listener
+  }, [router]);
+
 
   const handleSubmit = async (e:any) => {
     e.preventDefault();
