@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useTeamData } from '../hooks/useTeamData';
 import "tailwindcss/tailwind.css";
 import { Syne, DM_Sans } from 'next/font/google';
-import { spice } from '@/lib/fonts';
 import { bebas } from '@/pages/team';
 
 export const syne = Syne({

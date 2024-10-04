@@ -11,6 +11,13 @@ export default function Leaderboard() {
   const { teams, loading, error } = useTeamData();
   const [sortedTeams, setSortedTeams] = useState([]);
 
+  interface Team {
+    id: string;
+    name: string;
+    balance: number;
+    investments: Record<string, number>;
+  }
+
   useEffect(() => {
     if (teams) {
       const sorted = [...teams].sort((a, b) => {
@@ -42,8 +49,8 @@ export default function Leaderboard() {
           </tr>
         </thead>
         <tbody>
-          {sortedTeams?.map((team, index) => {
-            const investmentsTotal: any = Object.values(team.investments).reduce((sum: any, val: any) => sum + val, 0);
+          {sortedTeams?.map((team : Team, index) => {
+            const investmentsTotal: any = Object.values(team?.investments).reduce((sum: any, val: any) => sum + val, 0);
             const totalValue = team.balance + investmentsTotal;
             return (
               <Reorder.Item as="tr" key={team.id} value={team} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
