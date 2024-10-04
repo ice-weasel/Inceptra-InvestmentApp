@@ -1,19 +1,22 @@
-import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
+import * as admin from 'firebase-admin';
 
-var admin = require("firebase-admin")
-var serviceAccount = require("../../iedc-mbcet-firebase-adminsdk-9j5f4-018406d623.json")
-
-//Thanks to this guy
-//https://github.com/firebase/firebase-admin-node/issues/2111#issuecomment-1636441596
-
-const usedApps = getApps();
-const adminAppConfig ={
-  credential: admin.credential.cert(serviceAccount)
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
+        // The private key needs to be replaced with newlines
+        privateKey: process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+    });
+  } catch (error) {
+    console.log('Firebase admin initialization error', error);
+  }
 }
 
-const adminApp = usedApps.length === 0
-? initializeApp(adminAppConfig,"admin-app")
-: usedApps[0]
+export const adminDb = admin.database();
+export const getAdminAuth = () => admin.auth();
 
-
-export default adminApp
+export default admin;

@@ -1,48 +1,79 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getAuth } from "firebase-admin/auth";
-import adminApp from "@/lib/firebaseAdmin";  
+
+import { adminDb, getAdminAuth } from '@/lib/firebaseAdmin'; 
+import adminApp from "@/lib/firebaseAdmin";// Import admin DB]
+
+
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).end(); // Method not allowed
   }
 
+   
+
   const { idToken } = req.body;
   if (!idToken) {
-    return res.status(400).json({ error: "Missing idToken" }); 
+    return res.status(400).json({ error: "Missing idToken" });
   }
 
-  const expiresIn = 60 * 60 * 24 * 5 * 1000;
+  const expiresIn = 60 * 60 * 24 * 5 * 1000; // Session expiration
 
   try {
-   
-    const sessionCookie = req.cookies.session;
+    console.log("Verifying ID token...");
+    const decodedIdToken = await getAdminAuth().verifyIdToken(idToken);
+    const { uid } = decodedIdToken;
+    console.log("ID token verified. User ID:", uid);
 
-    if (sessionCookie) {
-    
-      try {
-        const decodedClaims = await getAuth(adminApp).verifySessionCookie(sessionCookie, true);
-        console.log("Session cookie is valid. Skipping generation.");
-        return res.status(200).json({ success: true, message: "Session cookie valid." });
-      } catch (error) {
-        console.log("Invalid or expired session cookie. Generating a new one...");
-      }
+    // Check if user has a team associated in the "users" collection
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+
+    if (!userSnapshot.exists()) {
+      console.log("User not found in database.");
+      return res.status(404).json({ error: "User not found" });
     }
 
-    // If no valid session cookie, create a new one
-    const newSessionCookie = await getAuth(adminApp).createSessionCookie(idToken, { expiresIn });
-    console.log("New session cookie generated successfully");
+    const userData = userSnapshot.val();
+    const teamId = userData.teamId; // Get the teamId associated with the user
+    console.log("Team ID associated with user:", teamId);
 
-    // Set the new cookie in the response header
+    if (!teamId) {
+      console.log("No team associated with this user.");
+      return res.status(404).json({ error: "No team associated with this user" });
+    }
+
+    // Fetch the team information using teamId
+    const teamRef = adminDb.ref(`teams/${teamId}`);
+    const teamSnapshot = await teamRef.once('value');
+
+    if (!teamSnapshot.exists()) {
+      console.log("Team not found in database.");
+      return res.status(404).json({ error: "Team not found" });
+    }
+
+    const teamData = teamSnapshot.val(); // Get the team data
+    console.log("Team data retrieved successfully:", teamData);
+
+    
+
+    // Generate a session cookie
+    const newSessionCookie = await getAuth().createSessionCookie(idToken, { expiresIn });
     res.setHeader(
       "Set-Cookie",
       `session=${newSessionCookie}; Max-Age=${expiresIn}; HttpOnly; Secure; Path=/`
     );
-    console.log("New session cookie set in response");
+    console.log("New session cookie set.");
 
-    res.status(200).json({ success: true, idToken: newSessionCookie });
+    // Return success with team data
+    res.status(200).json({
+      success: true,
+      teamId,
+      teamName: teamData.name,
+    });
   } catch (error) {
-    console.error("Error generating session cookie:", error);
+    console.error("Error:", error);
     res.status(401).send("UNAUTHORIZED REQUEST!");
   }
 }

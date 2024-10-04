@@ -1,17 +1,17 @@
 import "tailwindcss/tailwind.css";
 import React from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../components/Layout';
-import InvestmentForm from '../components/InvestmentForm';
-import { useTeamData } from '../hooks/useTeamData';
-import adminApp from "@/lib/firebaseAdmin";
-import { getAuth } from "firebase-admin/auth";
+import Layout from '../../components/Layout';
+import InvestmentForm from '../../components/InvestmentForm';
+import { useTeamData } from '../../hooks/useTeamData';
+
 
 export async function getServerSideProps(context: any) {
-  const { req, params } = context;
+  const { req } = context;
   const sessionCookie = req.cookies["session"];
 
   if (!sessionCookie) {
+    // Redirect to login if no session cookie
     return {
       redirect: {
         destination: "/Login",
@@ -20,38 +20,17 @@ export async function getServerSideProps(context: any) {
     };
   }
 
-  // Verify the session cookie
-  try {
-    const decodedClaims = await getAuth(adminApp).verifySessionCookie(sessionCookie, true);
-    const teamId = decodedClaims.teamId; // Get the teamId from the decoded claims
-
-    // If the URL team ID doesn't match the session team ID, redirect
-    if (params.id !== teamId) {
-      return {
-        redirect: {
-          destination: "/restricted", // Redirect to a restricted access page
-          permanent: false,
-        },
-      };
-    }
-
-    return { props: { teamId, sessionCookie } }; // Pass teamId to the component
-
-  } catch (error) {
-    return {
-      redirect: {
-        destination: "/Login",
-        permanent: false,
-      },
-    };
-  }
+  // Pass session data to the page
+  return { props: { sessionCookie } };
 }
 
-export default function TeamPage({ teamId }:any) {
+
+export default function TeamPage() {
+  const router = useRouter();
+  const { id } = router.query;
   const { getTeam, loading, error } = useTeamData();
 
-  // Use the teamId obtained from server-side props
-  const team = getTeam(teamId);
+  const team = getTeam(id as string);
 
   if (loading) return <Layout><p>Loading...</p></Layout>;
   if (error) return <Layout><p>Error: {error.message}</p></Layout>;
@@ -69,7 +48,7 @@ export default function TeamPage({ teamId }:any) {
         <h2 className="text-2xl font-semibold mb-2">Current Investments</h2>
         {Object.entries(team.investments).length > 0 ? (
           <ul>
-            {Object.entries(team.investments).map(([teamId, amount]: any) => (
+            {Object.entries(team.investments).map(([teamId, amount]:any) => (
               <li key={teamId} className="mb-2">
                 {teamId}: ${amount.toLocaleString()}
               </li>
@@ -81,7 +60,7 @@ export default function TeamPage({ teamId }:any) {
       </div>
 
       <h2 className="text-2xl font-semibold mb-2">Make an Investment</h2>
-      <InvestmentForm teamId={teamId} /> {/* Use the teamId passed as prop */}
+      <InvestmentForm teamId={id} />
     </Layout>
   );
 }
