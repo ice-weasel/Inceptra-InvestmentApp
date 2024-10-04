@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spice.className}  antialiased`}
+        className={` antialiased`}
       >
         {children}
       </body>
