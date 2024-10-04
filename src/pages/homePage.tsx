@@ -2,7 +2,6 @@
 "use client"
 import "tailwindcss/tailwind.css";
 import React from 'react';
-import Link from 'next/link';
 import Layout from '../components/Layout';
 import { useTeamData } from '../hooks/useTeamData';
 import TeamDet2 from "@/components/Teamdet2";
