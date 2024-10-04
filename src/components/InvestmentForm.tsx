@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useTeamData } from '../hooks/useTeamData';
 import "tailwindcss/tailwind.css";

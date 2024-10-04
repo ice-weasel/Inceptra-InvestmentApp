@@ -65,11 +65,7 @@ export function useTeamData(): UseTeamData {
   }, []);
 
   const getTeam = (id: string): Team | undefined => teams.find((team) => team.id === id);
-  const getTeamNameById = (teamId: string): string | undefined => {
-    const team = getTeam(teamId);
-    return team ? team.name : undefined;
-  };
-  
+
 
   const makeInvestment = async (fromTeamId: string, toTeamId: string, amount: number): Promise<void> => {
     if (fromTeamId === toTeamId) {
@@ -79,7 +75,8 @@ export function useTeamData(): UseTeamData {
     const fromTeam = getTeam(fromTeamId);
     const toTeam = getTeam(toTeamId);
 
-    const toTeamName = toTeam.name;
+    const toTeamName = toTeam?.name || 'Default Team Name'; 
+
 
 
     if (!fromTeam || !toTeam) {
