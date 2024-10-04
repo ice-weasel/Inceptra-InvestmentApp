@@ -19,4 +19,4 @@ if (!admin.apps.length) {
 export const adminDb = admin.database();
 export const getAdminAuth = () => admin.auth();
 
-export default admin;
+export default admin; 

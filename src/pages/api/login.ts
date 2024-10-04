@@ -1,17 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
-import { adminDb, getAdminAuth } from '@/lib/firebaseAdmin'; 
-import adminApp from "@/lib/firebaseAdmin";// Import admin DB]
-
-
-
+import { getAuth } from "firebase-admin/auth";
+import { adminDb } from '@/lib/firebaseAdmin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).end(); // Method not allowed
   }
-
-   
 
   const { idToken } = req.body;
   if (!idToken) {
@@ -22,11 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     console.log("Verifying ID token...");
-    const decodedIdToken = await getAdminAuth().verifyIdToken(idToken);
+    const decodedIdToken = await getAuth().verifyIdToken(idToken);
     const { uid } = decodedIdToken;
-    console.log("ID token verified. User ID:", uid);
+    console.log("ID token verified. Firebase UID:", uid);
 
-    // Check if user has a team associated in the "users" collection
+    // Retrieve the user data directly using the Firebase UID
     const userRef = adminDb.ref(`users/${uid}`);
     const userSnapshot = await userRef.once('value');
 
@@ -36,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const userData = userSnapshot.val();
-    const teamId = userData.teamId; // Get the teamId associated with the user
+    const teamId = userData.teamId;
     console.log("Team ID associated with user:", teamId);
 
     if (!teamId) {
@@ -53,10 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: "Team not found" });
     }
 
-    const teamData = teamSnapshot.val(); // Get the team data
+    const teamData = teamSnapshot.val();
     console.log("Team data retrieved successfully:", teamData);
-
-    
 
     // Generate a session cookie
     const newSessionCookie = await getAuth().createSessionCookie(idToken, { expiresIn });

@@ -1,14 +1,17 @@
 import "tailwindcss/tailwind.css";
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import Layout from '../components/Layout';
 import InvestmentForm from '../components/InvestmentForm';
 import { useTeamData } from '../hooks/useTeamData';
-import adminApp from "@/lib/firebaseAdmin";
+import adminApp, { getAdminAuth } from "@/lib/firebaseAdmin";
 import { getAuth } from "firebase-admin/auth";
+import { GetServerSideProps } from 'next';
+import { adminDb } from '@/lib/firebaseAdmin';
 
-export async function getServerSideProps(context: any) {
-  const { req, params } = context;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { req } = context;
   const sessionCookie = req.cookies["session"];
 
   if (!sessionCookie) {
@@ -20,24 +23,41 @@ export async function getServerSideProps(context: any) {
     };
   }
 
-  // Verify the session cookie
   try {
-    const decodedClaims = await getAuth(adminApp).verifySessionCookie(sessionCookie, true);
-    const teamId = decodedClaims.teamId; // Get the teamId from the decoded claims
+    // Verify the session cookie
+    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
+    const uid = decodedClaims.uid;
 
-    // If the URL team ID doesn't match the session team ID, redirect
-    if (params.id !== teamId) {
-      return {
-        redirect: {
-          destination: "/restricted", // Redirect to a restricted access page
-          permanent: false,
-        },
-      };
+    // Fetch user data to get the teamId
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+
+    if (!userData || !userData.teamId) {
+      throw new Error('User has no associated team');
     }
 
-    return { props: { teamId, sessionCookie } }; // Pass teamId to the component
+    const teamId = userData.teamId;
 
+    // Fetch basic team data
+    const teamRef = adminDb.ref(`teams/${teamId}`);
+    const teamSnapshot = await teamRef.once('value');
+    const teamData = teamSnapshot.val();
+
+    if (!teamData) {
+      throw new Error('Team not found');
+    }
+
+    // Return teamId and basic team data
+    return { 
+      props: { 
+        teamId,
+        teamName: teamData.name,
+        teamBalance: teamData.balance,
+      } 
+    };
   } catch (error) {
+    console.error('Error verifying session:', error);
     return {
       redirect: {
         destination: "/Login",
@@ -47,8 +67,31 @@ export async function getServerSideProps(context: any) {
   }
 }
 
-export default function TeamPage({ teamId }:any) {
+
+interface TeamPageProps {
+  teamId: string;
+  teamName: string;
+  teamBalance: number;
+}
+
+
+export default function TeamPage({ teamId, teamName, teamBalance }: TeamPageProps)  {
   const { getTeam, loading, error } = useTeamData();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/logout', { method: 'POST' });
+      if (response.ok) {
+        router.push('/Login');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('An error occurred during logout', error);
+    }
+  };
+
 
   // Use the teamId obtained from server-side props
   const team = getTeam(teamId);
@@ -82,6 +125,10 @@ export default function TeamPage({ teamId }:any) {
 
       <h2 className="text-2xl font-semibold mb-2">Make an Investment</h2>
       <InvestmentForm teamId={teamId} /> {/* Use the teamId passed as prop */}
+
+      <button onClick={handleLogout} type="button" className="mt-4 bg-red-500 text-white p-2 rounded">
+        Logout
+      </button>
     </Layout>
   );
 }
