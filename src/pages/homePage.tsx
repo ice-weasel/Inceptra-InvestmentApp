@@ -8,6 +8,7 @@ import TeamDet2 from "@/components/Teamdet2";
 import { familjen } from "./team";
 import Image from "next/image";
 import themeImage from '../../public/themeImage.png';
+import { syne } from "@/components/InvestmentForm";
 
 export default function HomePage() {
   const { teams, loading, error } = useTeamData();
@@ -34,7 +35,7 @@ export default function HomePage() {
           <TeamDet2 teamName={team.name} key={team.name} href={'/team'} balance={team.balance}/>
         ))}
       </div>
-
+        <div className={`${syne.className} mt-10 text-xl `}>Click on any one of the teams above</div>
       {/* <Link href="/leaderBoard" className="mt-6 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
         View Leaderboard
       </Link> */}

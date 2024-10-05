@@ -7,6 +7,8 @@ import { Reorder } from "framer-motion";
 import { spice } from '@/lib/fonts';
 import Image from 'next/image';
 import backgroundImage from '../../public/bgImage.png';
+import { bebas } from './team';
+import { syne } from '@/components/InvestmentForm';
 export default function Leaderboard() {
   const { teams, loading, error } = useTeamData();
   const [sortedTeams, setSortedTeams] = useState([]);
@@ -35,30 +37,30 @@ export default function Leaderboard() {
   return (
     <Layout >
 
-     <div className='bg-[#F0F0F0] px-8 md:px-24  py-14 w-full h-full relative'>
+     <div className={`${syne.className} bg-[#F0F0F0] px-6 md:px-24  py-14 w min-w-screen   min-h-screen h-full relative`}>
       <Image src={backgroundImage} alt='Theme Image' layout='fill' className=' absolute object-cover -z-10'/>
-     <h1 className={ `${spice.className} text-black  tracking-wide  text-5xl z-20 font-bold mb-6`}>Leaderboard</h1>
+     <h1 className={ `${bebas.className} text-black  tracking-wide  text-5xl z-20 font-bold mb-6`}>Leaderboard</h1>
       <Reorder.Group as="table" axis="y" values={sortedTeams} onReorder={setSortedTeams} className="w-full z-20 border-collapse">
-        <thead className='rounded-xl overflow-hidden border-none stroke-none'>
-          <tr className="bg-red-200 overflow-hidden border-none stroke-none  rounded-xl">
-            <th className="border rounded-t-lg p-2 stroke-none">Rank</th>
+        <thead className='rounded-xl mb-3 overflow-hidden border-none stroke-none shadow-custom-2'>
+          <tr className="bg-[#6d8aff8f] shadow-custom-2 border-black border-2  rounded-b-md overflow-hidden border-none stroke-none text-xl  rounded-xl">
+            <th className=" rounded-t-lg  p-2 stroke-black stroke-1  shadow-custom-2">Rank</th>
             <th className="border rounded-t-lg p-2">Team</th>
             <th className="border rounded-t-lg p-2">Balance</th>
             <th className="border rounded-t-lg p-2">Investments</th>
             <th className="border rounded-t-lg p-2">Total Value</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className='rounded-xl overflow-hidden mt-3'>
           {sortedTeams?.map((team : Team, index) => {
             const investmentsTotal: any = Object.values(team?.investments).reduce((sum: any, val: any) => sum + val, 0);
             const totalValue = team.balance + investmentsTotal;
             return (
-              <Reorder.Item as="tr" key={team.id} value={team} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
-                <td className="border p-2">{index + 1}</td>
-                <td className="border p-2">{team.name}</td>
-                <td className="border p-2">${team.balance.toLocaleString()}</td>
-                <td className="border p-2">${investmentsTotal.toLocaleString()}</td>
-                <td className="border p-2">${totalValue.toLocaleString()}</td>
+              <Reorder.Item as="tr" key={team.id} value={team} className={index % 2 === 0 ? 'bg-gray-100   border-2  rounded-b-md mb-2 overflow-hidden text-xl' : ' text-xl rounded-b-md  mb-2 overflow-hidden'}>
+                <td className={`  border p-2 text-center text-lg`}>{index + 1}</td>
+                <td className={` border p-2 text-lg`}>{team.name}</td>
+                <td className={`${bebas.className} text-center border p-2`}>${team.balance.toLocaleString()}</td>
+                <td className={`${bebas.className} text-center border p-2`}>${investmentsTotal.toLocaleString()}</td>
+                <td className={`${bebas.className} text-center border p-2`}>${totalValue.toLocaleString()}</td>
               </Reorder.Item>
             );
           })}
@@ -68,3 +70,4 @@ export default function Leaderboard() {
     </Layout>
   );
 }
+
