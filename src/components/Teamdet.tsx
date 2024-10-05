@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { bebas } from '@/pages/team'
 import React, { useMemo } from 'react'
 import { syne } from './InvestmentForm'
