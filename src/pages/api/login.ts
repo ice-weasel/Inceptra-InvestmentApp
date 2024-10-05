@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Fetch the team information using teamId
     const teamRef = adminDb.ref(`teams/${teamId}`);
     const teamSnapshot = await teamRef.once('value');
-
+    console.log("Team Snap",teamSnapshot)
     if (!teamSnapshot.exists()) {
       console.log("Team not found in database.");
       return res.status(404).json({ error: "Team not found" });

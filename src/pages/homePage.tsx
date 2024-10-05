@@ -12,7 +12,7 @@ import { syne } from "@/components/InvestmentForm";
 
 export default function HomePage() {
   const { teams, loading, error } = useTeamData();
-
+  console.log("Teams are",teams)
   if (loading) return <Layout><p>Loading...</p></Layout>;
   if (error) return <Layout><p>Error: {error.message}</p></Layout>;
 
@@ -26,13 +26,12 @@ export default function HomePage() {
       <h2 className={`${familjen.className} text-2xl font-semibold mb-4`}>Participating Teams:</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {teams.map((team:any) => (
-          // <Link key={team.id} href={'/team'}>
-          //   <div className="border p-4 rounded hover:bg-gray-100 cursor-pointer">
-          //     <h3 className="text-xl font-semibold">{team.name}</h3>
-          //     <p>Current Balance: ${team.balance}</p>
-          //   </div>
-          // </Link>
-          <TeamDet2 teamName={team.name} key={team.name} href={'/team'} balance={team.balance}/>
+    
+         
+            <TeamDet2 id= {team.id} teamName={team.name} key={team.name} href={'/team'} balance={team.balance}/>
+          
+
+          
         ))}
       </div>
         <div className={`${syne.className} mt-10 text-xl `}>Click on any one of the teams above</div>

@@ -17,7 +17,7 @@ const backgroundColors = [
   'bg-[#E6E6FA]'
 ];
 
-const TeamDet2 = ({teamName, balance,href}: {teamName: string, balance: string,href:string}) => {
+const TeamDet2 = ({teamName, balance,href ,id}: {teamName: string, balance: string,href:string,id:string}) => {
   // Randomly select a background color
   const randomBgColor = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * backgroundColors.length);
@@ -26,7 +26,7 @@ const TeamDet2 = ({teamName, balance,href}: {teamName: string, balance: string,h
 
   return (
     <Link href={href} className={`flex px-3 py-3 items-center gap-3 justify-between rounded-md ${randomBgColor} border-black border-2 shadow-custom-3`}>
-      <div className={`${syne.className} font-bold`}>{teamName}</div>
+      <div className={`${syne.className} font-bold`}>Team {id} : {teamName}</div>
     <div className='flex items-center gap-1'>
     <div className="scale-[1]">
               {/* <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">

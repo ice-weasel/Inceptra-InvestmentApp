@@ -60,13 +60,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     const teamId = userData.teamId;
+    console.log("Team ID:", teamId); // For debugging
 
     const teamRef = adminDb.ref(`teams/${teamId}`);
     const teamSnapshot = await teamRef.once('value');
+
+    console.log("Team Snapshot",teamSnapshot)
+    
+    // Check if teamSnapshot exists and retrieve teamData
     const teamData = teamSnapshot.val();
 
-    if (!teamData) {
-      throw new Error('Team not found');
+   
+
+    // Logging to see the structure of teamData
+    console.log("Team Data:", teamData);
+
+    // Ensure investments is an object
+    if (typeof teamData.investments !== 'object' || teamData.investments === null) {
+      teamData.investments = {};
     }
 
     return { 
@@ -74,6 +85,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         teamId,
         teamName: teamData.name,
         teamBalance: teamData.balance,
+        teamInvestments: teamData.investments // Pass investments as a prop if needed
       } 
     };
   } catch (error) {
@@ -86,6 +98,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 }
+
+
 
 interface TeamPageProps {
   teamId: string;

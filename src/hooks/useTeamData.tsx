@@ -6,6 +6,7 @@ import "tailwindcss/tailwind.css"; // Ensure this path is correct for your proje
 
 // Define the structure of a team object
 interface Team {
+  teamId:string;
   id: string;
   name: string;
   balance: number;
@@ -71,7 +72,7 @@ export function useTeamData(): UseTeamData {
   }, []);
 
   const getTeam = (id: string): Team | undefined =>
-    teams.find((team) => team.id === id);
+    teams.find((team) => team.teamId === id);
 
   const makeInvestment = async (
     fromTeamId: string,
