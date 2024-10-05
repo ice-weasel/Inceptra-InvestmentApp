@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { ref, onValue, set, push, serverTimestamp } from 'firebase/database';
-import { db } from '../lib/firebase';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useEffect } from "react";
+import { ref, onValue, set, push, serverTimestamp } from "firebase/database";
+import { db } from "../lib/firebase";
 import "tailwindcss/tailwind.css"; // Ensure this path is correct for your project
 
 // Define the structure of a team object
@@ -9,7 +10,7 @@ interface Team {
   name: string;
   balance: number;
   investments: { [key: string]: number };
-  returns : { [key: string]: number }
+  netreturns: number;
 }
 
 interface UseTeamData {
@@ -17,7 +18,11 @@ interface UseTeamData {
   loading: boolean;
   error: Error | null;
   getTeam: (id: string) => Team | undefined;
-  makeInvestment: (fromTeamId: string, toTeamId: string, amount: number) => Promise<void>;
+  makeInvestment: (
+    fromTeamId: string,
+    toTeamId: string,
+    amount: number
+  ) => Promise<void>;
 }
 
 export function useTeamData(): UseTeamData {
@@ -26,7 +31,7 @@ export function useTeamData(): UseTeamData {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const teamsRef = ref(db, 'teams');
+    const teamsRef = ref(db, "teams");
     const unsubscribe = onValue(
       teamsRef,
       (snapshot) => {
@@ -36,18 +41,18 @@ export function useTeamData(): UseTeamData {
           // Ensure teamsData is an object before attempting to map it
           const teamsArray: Team[] = teamsData
             ? Object.entries(teamsData).map(([id, data]) => {
-                if (typeof data === 'object' && data !== null) {
-                  const teamData = data as Omit<Team, 'id'>; // Omit the id from the data
+                if (typeof data === "object" && data !== null) {
+                  const teamData = data as Omit<Team, "id">; // Omit the id from the data
                   return {
-                    id, // Add the id explicitly here
+                    id, // Add the id explicitlyhere
                     ...teamData, // Spread the rest of the team data
                   };
                 } else {
-                  throw new Error('Invalid team data');
+                  throw new Error("Invalid team data");
                 }
               })
             : [];
-          
+
           setTeams(teamsArray);
           setLoading(false);
         } catch (err) {
@@ -65,98 +70,102 @@ export function useTeamData(): UseTeamData {
     return () => unsubscribe();
   }, []);
 
-  const getTeam = (id: string): Team | undefined => teams.find((team) => team.id === id);
-
+  const getTeam = (id: string): Team | undefined =>
+    teams.find((team) => team.id === id);
 
   const makeInvestment = async (
-    fromTeamId: string, 
-    toTeamId: string, 
-    amount: number, 
-    profitPercentage: number = 0.1, // Set default values for demonstration
+    fromTeamId: string,
+    toTeamId: string,
+    amount: number,
+    profitPercentage: number = 0.1,
     time: number = 1
   ): Promise<void> => {
     if (fromTeamId === toTeamId) {
-      throw new Error('Cannot invest in your own team');
+      throw new Error("Cannot invest in your own team");
     }
-  
+
     const fromTeam = getTeam(fromTeamId);
     const toTeam = getTeam(toTeamId);
-  
-    const toTeamName = toTeam?.name || 'Default Team Name';
-  
+
     if (!fromTeam || !toTeam) {
-      throw new Error('Invalid team ID');
+      throw new Error("Invalid team ID");
     }
-  
+
     if (fromTeam.balance < amount) {
-      throw new Error('Insufficient funds');
+      throw new Error("Insufficient funds");
     }
-  
+
+    // Ensure `investments` and `netreturns` are initialized
+    fromTeam.investments = fromTeam.investments || {};
+    fromTeam.netreturns = fromTeam.netreturns || 0;
+
     const fromTeamRef = ref(db, `teams/${fromTeamId}`);
     const toTeamRef = ref(db, `teams/${toTeamId}`);
-    const transactionRef = ref(db, 'transactions');
-  
-    // Returns Calculation
-    const calculateReturns = (
-      fromTeam: Team,
-      toTeam: Team,
-      investmentAmount: number,
-      profitPercentage: number,
-      time: number
-    ) => {
-      const investmentsOut = Object.values(fromTeam.investments).reduce((acc, val) => acc + val, 0);
-      const profitOnInvestment = investmentAmount * Math.pow(1 + profitPercentage, time);
-      const returnsIn = Object.values(toTeam.investments).reduce((acc, val) => acc + val, 0);
-      return profitOnInvestment + returnsIn - investmentsOut;
+    const transactionRef = ref(db, "transactions");
+
+    const investmentAmount = (fromTeam.investments[toTeam.name] || 0) + amount;
+    if (isNaN(investmentAmount)) {
+      throw new Error("Invalid investment amount");
+    }
+
+    // Function to calculate net returns for a team
+    const calculateNetReturns = (team: Team): number => {
+      const totalInvestmentsOut = Object.values(team.investments || {}).reduce(
+        (acc, val) => acc + val,
+        0
+      );
+      const totalInvestmentsIn = team.netreturns || 0; // Using netreturns as a single value (since it's no longer an object)
+
+      // Net returns: incoming investments minus outgoing investments
+      return totalInvestmentsIn - totalInvestmentsOut;
     };
-  
+
     try {
+      // Calculate the updated balance and net returns in one step
+      const updatedBalance = fromTeam.balance - amount;
+
+      // Set the new data in one `set` call to avoid overwriting issues
       await set(fromTeamRef, {
         ...fromTeam,
-        balance: fromTeam.balance - amount,
+        balance: updatedBalance, // Update balance here
         investments: {
           ...fromTeam.investments,
-          [toTeamName]: (fromTeam.investments[toTeamName] || 0) + amount,
+          [toTeam.name]: (fromTeam.investments[toTeam.name] || 0) + amount, // Update investment amount in toTeam
         },
+        netreturns: calculateNetReturns(fromTeam), // Store the calculated net returns
       });
-  
-      await set(toTeamRef, {
+
+      const calculatedNetReturns = calculateNetReturns(toTeam);
+      console.log(
+        `Calculated Net Returns for ${toTeam.id}:`,
+        calculatedNetReturns
+      );
+      // Update toTeam balance in one go
+      // Update toTeam's netreturns
+      const updatedToTeam = {
         ...toTeam,
         balance: toTeam.balance + amount,
-      });
-  
+        netreturns: (toTeam.netreturns || 0) + amount, // Increment netreturns by the investment amount
+      };
+
+      await set(toTeamRef, updatedToTeam);
+
+      // Log the transaction
       await push(transactionRef, {
         from: fromTeamId,
         to: toTeamId,
         amount,
         timestamp: serverTimestamp(),
       });
-  
-      // Calculate the returns after the investment
-      const returns = calculateReturns(fromTeam, toTeam, amount, profitPercentage, time);
-      await set(fromTeamRef, {
-        ...fromTeam,
-        balance: fromTeam.balance - amount,
-        investments: {
-          ...fromTeam.investments,
-          [toTeamName]: (fromTeam.investments[toTeamName] || 0) + amount,
-        },
-        returns: {
-          ...fromTeam.returns, // Spread existing returns if any
-          [toTeamId]: (fromTeam.returns?.[toTeamId] || 0) + returns, // Create or update the specific returns for this investment
-        },
-      });
-      
 
-      console.log(`Calculated returns for ${fromTeamId} after investing in ${toTeamId}: ${returns}`);
-      
-      // Optionally, you can store `returns` back into your database if needed.
-      
+      console.log(
+        `Investment made from ${fromTeamId} to ${toTeamId} for amount: ${amount}`
+      );
     } catch (err) {
       setError(err as Error);
       throw err;
     }
   };
-  
+
   return { teams, loading, error, getTeam, makeInvestment };
 }
