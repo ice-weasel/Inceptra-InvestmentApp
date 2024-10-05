@@ -12,6 +12,7 @@ interface Team {
   balance: number;
   investments: { [key: string]: number };
   netreturns: number;
+  receivedInvestment : number
 }
 
 interface UseTeamData {
@@ -133,7 +134,7 @@ export function useTeamData(): UseTeamData {
           ...fromTeam.investments,
           [toTeam.name]: (fromTeam.investments[toTeam.name] || 0) + amount, // Update investment amount in toTeam
         },
-        netreturns: calculateNetReturns(fromTeam), // Store the calculated net returns
+       // netreturns: calculateNetReturns(fromTeam), // Store the calculated net returns
       });
 
       const calculatedNetReturns = calculateNetReturns(toTeam);
@@ -145,7 +146,8 @@ export function useTeamData(): UseTeamData {
       // Update toTeam's netreturns
       const updatedToTeam = {
         ...toTeam,
-        balance: toTeam.balance + amount,
+        // balance: toTeam.balance + amount,
+       // receivedInvestment  : toTeam?.receivedInvestment + amount,
         netreturns: (toTeam.netreturns || 0) + amount, // Increment netreturns by the investment amount
       };
 
