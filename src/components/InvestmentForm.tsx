@@ -85,6 +85,7 @@ export default function InvestmentForm({ teamId, currentBalance }: { teamId: str
     if (!targetTeam || !amount || amountError) return;
     
     try {
+      console.log("teamId and targetTeam",teamId,targetTeam)
       await makeInvestment(teamId, targetTeam, Number(amount));
       setTargetTeam('');
       setAmount('');
@@ -112,7 +113,7 @@ export default function InvestmentForm({ teamId, currentBalance }: { teamId: str
           {teams
             .filter((team: any) => team.id !== teamId)
             .map((team: any) => (
-              <option key={team.id} value={team.id} className='font-medium tracking-tight'>
+              <option key={team.id} value={team.teamId} className='font-medium tracking-tight'>
                 {team.name}
               </option>
             ))}
