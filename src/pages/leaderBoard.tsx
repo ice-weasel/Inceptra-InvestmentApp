@@ -25,12 +25,13 @@ export default function Leaderboard() {
   useEffect(() => {
     if (teams) {
       const sorted = [...teams].sort((a, b) => {
-        const totalA = a.balance + Object.values(a.netreturns).reduce((sum: any, val: any) => sum + val, 0);
-        const totalB = b.balance + Object.values(b.netreturns).reduce((sum: any, val: any) => sum + val, 0);
-        return totalB - totalA;
+        const totalA = a.netreturns; // Directly use the numeric value
+        const totalB = b.netreturns; // Directly use the numeric value
+        return totalB - totalA; // Sorting in descending order
       });
       setSortedTeams(sorted as any);
     }
+    
   }, [teams]);
 
   if (loading) return <Layout><p>Loading...</p></Layout>;
@@ -49,7 +50,7 @@ export default function Leaderboard() {
             <th className="border rounded-t-lg p-2">Team</th>
             <th className="border rounded-t-lg p-2">Balance</th>
             <th className="border rounded-t-lg p-2">Investments</th>
-            {/* <th className="border rounded-t-lg p-2">Returns</th> */}
+            <th className="border rounded-t-lg p-2">Returns</th> 
           </tr>
         </thead>
         <tbody className='rounded-xl overflow-hidden mt-3'>
@@ -62,7 +63,7 @@ export default function Leaderboard() {
                 <td className={` border p-2 text-lg`}>{team.name}</td>
                 <td className={`${bebas.className} text-center border p-2`}>${team.balance.toLocaleString()}</td>
                 <td className={`${bebas.className} text-center border p-2`}>${investmentsTotal.toLocaleString()}</td>
-                {/* <td className={`${bebas.className} text-center border p-2`}>${team?.netreturns ? team?.netreturns : 0}</td> */}
+                 <td className={`${bebas.className} text-center border p-2`}>${team?.netreturns ? team?.netreturns : 0}</td> 
               </Reorder.Item>
             );
           })}
